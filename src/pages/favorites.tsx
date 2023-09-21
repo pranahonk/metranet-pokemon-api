@@ -26,10 +26,11 @@ const Home: NextPage = () => {
           gap="2rem"
           flexWrap="wrap"
           justifyContent="center"
+          className="container"
         >
           {favorites.length > 0 ? (
             <>
-                <div className="grid grid-cols-5 grid-rows-8 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                     {favorites.map((book, y) => (
                         <Card key={y} pokemon={book} view="grid" />
                     ))}

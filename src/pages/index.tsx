@@ -1,15 +1,21 @@
-import {Box, Button, Heading, useToast} from "@chakra-ui/react";
+import {Box, Heading, useToast} from "@chakra-ui/react";
 import type {NextPage} from "next";
-import {useAppDispatch, useAppSelector} from "../store/store";
+import {useAppDispatch} from "../store/store";
 import Card from "../Components/Card";
-import {useEffect, useState} from "react";
+import * as React from "react";
+import {useEffect, useRef, useState} from "react";
 import {pokemonApi} from "../services/BookApi";
-import {SelectPokemon, setPokemonList} from "../store/Pokemon.store";
-import {ArrowLeftIcon, ArrowRightIcon} from "@chakra-ui/icons";
+import {setPokemonList} from "../store/Pokemon.store";
+import useInfiniteScroll from "react-infinite-scroll-hook";
 
 
 interface ErrorType {
     error: string;
+}
+
+interface ItemData {
+    name: string;
+    url: string;
 }
 
 
@@ -19,107 +25,123 @@ const Home: NextPage = () => {
     const circleCommonClasses = 'h-2.5 w-2.5 bg-current rounded-full';
     const [offset, setOffset] = useState(0);
     const [limit, setLimit] = useState(20);
-    const { count, next, previous, results } = useAppSelector(SelectPokemon);
+    const [loading, setLoading] = useState(false);
+    const [items, setItems] = useState<ItemData[]>([]);
+    const [urlNext, setUrlNext] =useState("")
+    const [hasNextPage, setHasNextPage] = useState<boolean>(true);
+    const [error, setError] = useState<Error>();
+    const containerRef = useRef(null);
 
-    const { data: pokemonList, refetch, isLoading, isFetching, error, status }  =
+
+    const { data: pokemonList, refetch, isLoading, isFetching, error: errorPokemon, status }  =
         pokemonApi({ offset, limit });
 
-    const onclickNext = async (url: string) => {
-        const queryString = url.split('?')[1];
 
-        // Use URLSearchParams to parse the query string
-        const urlSearchParams = new URLSearchParams(queryString);
+    async function onclickNext() {
+        setLoading(true);
+        try {
+            if (urlNext) {
+                const queryString = urlNext.split('?')[1];
+                const urlSearchParams = new URLSearchParams(queryString);
+                const offsetParam = urlSearchParams.get("offset");
+                const limitParam = urlSearchParams.get("limit");
 
-        // Get the values of 'offset' and 'limit' from the URL
-        const offsetParam = urlSearchParams.get("offset");
-        const limitParam = urlSearchParams.get("limit");
+                await setOffset(Number(offsetParam));
+                await setLimit(Number(limitParam));
+                await refetch();
+                setItems((current) => {
+                    const newItems = pokemonList?.data?.results || [];
+                    // Filter out items that are already in the current array
+                    const filteredItems = newItems.filter((newItem) => {
+                        return !current.some((currentItem) => currentItem.name === newItem.name);
+                    });
+                    return [...current, ...filteredItems];
+                });
+                setHasNextPage(!!urlNext);
+            }
 
-
-        await setOffset(Number(offsetParam));
-        await setLimit(Number(limitParam));
-        setTimeout(()=>{
-            refetch()
-        }, 1000)
-
+        } catch (err) {
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
     }
 
+
+    const [infiniteRef, { rootRef }] = useInfiniteScroll({
+        loading: isLoading,
+        hasNextPage,
+        onLoadMore: onclickNext,
+        disabled: !!error,
+        rootMargin: '0px 400px 0px 0px',
+    });
 
     useEffect(() => {
         if(pokemonList?.data){
             dispatch(setPokemonList(pokemonList.data));
+            setItems((current) => {
+                const newItems = pokemonList?.data?.results || [];
+                // Filter out items that are already in the current array
+                const filteredItems = newItems.filter((newItem) => {
+                    return !current.some((currentItem) => currentItem.name === newItem.name);
+                });
+                return [...current, ...filteredItems];
+            });
+            setUrlNext(pokemonList?.data?.next);
         }
 
     }, [pokemonList]);
 
 
     return (
-    <Box p={{ base: "2rem 0.5rem", md: "1rem 2rem" }} flex="1 0  auto">
+        <div ref={rootRef} className="max-h-full max-w-full overflow-auto bg-neutral-50">
+            <Box p={{ base: "2rem 0.5rem", md: "1rem 2rem" }} flex="1 0  auto" >
 
-      <Heading textAlign="center" m="2rem 0">
-          List of pokemon
-      </Heading>
-        {
-            error && (
-                toast({
-                    title: String((error as ErrorType).error),
-                    position: 'top',
-                    isClosable: true,
-                    status: 'error',
-                    duration: 2000,
-                })
-            )
-        }
-      <Box
-        margin="0 auto"
-        display="flex"
-        gap="2rem"
-        flexWrap="wrap"
-        justifyContent="center"
-        paddingTop="2rem"
-        className="container"
-      >
-          {
-              isFetching ? (
-                  <div className='flex'>
-                      <div className={`${circleCommonClasses} mr-1 animate-bounce`}></div>
-                      <div className={`${circleCommonClasses} mr-1 animate-bounce200`}></div>
-                      <div className={`${circleCommonClasses} animate-bounce400`}></div>
-                  </div>
-              ) :<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                  {pokemonList?.data?.results.map((pokemon, y) => <Card key={`${pokemon.name}-${y}`} pokemon={pokemon} view={'grid'} />
-                  )}
-              </div>
-          }
-      </Box>
+                <Heading textAlign="center" m="2rem 0">
+                    List of pokemon
+                </Heading>
+                {
+                    errorPokemon && (
+                        toast({
+                            title: String((errorPokemon as ErrorType).error),
+                            position: 'top',
+                            isClosable: true,
+                            status: 'error',
+                            duration: 2000,
+                        })
+                    )
+                }
+                <Box
+                    margin="0 auto"
+                    display="flex"
+                    gap="2rem"
+                    flexWrap="wrap"
+                    justifyContent="center"
+                    paddingTop="2rem"
+                    className="container"
 
-      <Box
-      marginTop="1rem"
-      display="flex"
-      alignItems="center"
-      justifyContent="space-evenly"
-      >
-          {
-              (pokemonList?.data?.previous && pokemonList?.data?.previous?.length > 0) && (
-                  <Button colorScheme='teal' size='sm'
-                          onClick={()=> onclickNext(previous)}
-                  >
-                      <ArrowLeftIcon />
-                      &nbsp; Prev
-                  </Button>
-              )
-          }
-          {
-              pokemonList?.data?.next.length > 0 && (
-                  <Button colorScheme='teal' size='sm'
-                          onClick={()=> onclickNext(next)}
-                  >
-                      Next&nbsp;
-                      <ArrowRightIcon />
-                  </Button>
-              )
-          }
-      </Box>
-    </Box>
+                >
+                    <div  className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {items.map((pokemon, y) => {
+                                return (
+                                    <>
+                                        <Card key={`${pokemon.name}-${y}`} pokemon={pokemon} view={'grid'} />
+
+                                    </>
+                                )
+                            }
+                        )}
+                        {hasNextPage && (
+                            <div ref={infiniteRef} className='flex items-center  justify-center'>
+                                <div className={`${circleCommonClasses} mr-1 animate-bounce`}></div>
+                                <div className={`${circleCommonClasses} mr-1 animate-bounce200`}></div>
+                                <div className={`${circleCommonClasses} animate-bounce400`}></div>
+                            </div>
+                        )}
+                    </div>
+                </Box>
+            </Box>
+        </div>
   );
 };
 

@@ -14,7 +14,7 @@ const Header = () => {
       gridTemplateColumns="1fr 1fr"
     >
       <Box display="flex" justifyContent="center" alignItems="center" fontSize="1.2rem" gap="0.5rem">
-        <Text fontWeight="bold">Nusameta Pokemon</Text>
+        <Text fontWeight="bold">Metranet Pokemon</Text>
       </Box>
 
       <Box justifySelf="flex-end" display="flex" gap="1.2rem">

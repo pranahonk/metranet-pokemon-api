@@ -34,7 +34,7 @@ const Card = ({ pokemon, view}: CardProps) => {
           onClickDetail()}>
         <Image src={url}
         alt={url}/>
-        <Heading as="h2" fontSize="1.2rem">
+        <Heading as="h2" fontSize="1.2rem" textAlign="center">
           {pokemon.name}
         </Heading>
       </Box>

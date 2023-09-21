@@ -10,7 +10,7 @@ To get started with this project, follow these steps:
 1. Clone the repository:
 
    ```shell 
-   git clone https://github.com/pranahonk/Nusameta-Pokemon
+   git clone https://github.com/pranahonk/metranet-pokemon-api
 
 2. Navigate to the project directory:
     ```shell
