@@ -1,0 +1,11 @@
+
+Xtypescript:S1128"0Remove this unused import of 'createAsyncThunk'.(šÜÉÇıÿÿÿÿ8ûæ¼í©1
+Otypescript:S1128"'Remove this unused import of 'current'.(šÜÉÇıÿÿÿÿ8Ú•¾í©1
+Utypescript:S1128"-Remove this unused import of 'PayloadAction'.(šÜÉÇıÿÿÿÿ8Ú•¾í©1
+Otypescript:S1128"'Remove this unused import of 'BookApi'.(öšÙıÿÿÿÿ8ûæ¼í©1
+Ltypescript:S1128"$Remove this unused import of 'Book'.(ÓÒáÓûÿÿÿÿ8ûæ¼í©1
+ntypescript:S6564"KRemove this redundant type alias and replace its occurrences with "number".(¯Ñ®÷8ûæ¼í©1
+stypescript:S6564	"KRemove this redundant type alias and replace its occurrences with "number".(­ì–éøÿÿÿÿ8ûæ¼í©1
+Ytypescript:S4123-"1Refactor this redundant 'await' on a non-promise.(¿½’Îşÿÿÿÿ8ûæ¼í©1
+ytypescript:S65442"QPromise-returning function provided to property where a void return was expected.(â€·²ıÿÿÿÿ8ûæ¼í©1
+ztypescript:S27378"WAdd logic to this catch clause or eliminate it and rethrow the exception automatically.(‚Œ·É8ûæ¼í©1
